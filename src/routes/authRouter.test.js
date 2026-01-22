@@ -21,6 +21,21 @@ test('login', async () => {
   expect(loginRes.body.user).toMatchObject(expectedUser);
 });
 
+test('unauthorized login', async () => {
+  const badLogin = {
+    email: testUser.email,
+    password: 'fake password',
+  };
+
+  const loginRes = await request(app)
+    .put('/api/auth')
+    .send(badLogin);
+
+  expect(loginRes.status).toBe(404);
+  expect(loginRes.body.token).toBeUndefined(); 
+});
+
+
 function expectValidJwt(potentialJwt) {
   expect(potentialJwt).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 }
