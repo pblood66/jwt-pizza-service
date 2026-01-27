@@ -11,6 +11,9 @@ function expectValidJwt(token) {
   expect(token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 }
 
+function getIdFromToken(token) {
+  return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id;
+}
 
 beforeAll(async () => {
   // create normal user via API
@@ -37,4 +40,33 @@ test('get current user', async () => {
   expect(res.status).toBe(200);
   expect(res.body.email).toBe(normalUser.email);
   expect(res.body.id).toBeDefined();
+});
+
+test('User can update self', async () => {
+  const userId = getIdFromToken(normalToken);
+
+  const res = await request(app)
+    .put(`/api/user/${userId}`)
+    .set('Authorization', `Bearer ${normalToken}`)
+    .send({
+      name: 'updated name',
+      email: normalUser.email,
+      password: 'newpass',
+    });
+
+  expect(res.status).toBe(200);
+  expect(res.body.user.name).toBe('updated name');
+  expectValidJwt(res.body.token);
+});
+
+test('User cannot update another user', async () => {
+  const otherId = 999999;
+
+  const res = await request(app)
+    .put(`/api/user/${otherId}`)
+    .set('Authorization', `Bearer ${normalToken}`)
+    .send({ name: 'hack' });
+
+  expect(res.status).toBe(403);
+  expect(res.body.message).toMatch(/unauthorized/i);
 });
