@@ -13,4 +13,8 @@ async function createAdminUser() {
   return { ...user, password: 'toomanysecrets' };
 }
 
-module.exports = {createAdminUser};
+function expectValidJwt(token) {
+  expect(token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
+}
+
+module.exports = {createAdminUser, expectValidJwt};
