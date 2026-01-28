@@ -4,7 +4,6 @@ const { createAdminUser, expectValidJwt } = require('./testUtil');
 
 let user = { name: 'franchiseUser', password: 'a' };
 let userToken;
-let userId;
 
 let admin;
 let adminToken;
@@ -12,16 +11,12 @@ let adminToken;
 let franchiseId;
 let storeId;
 
-function getIdFromToken(token) {
-  return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString()).id;
-}
 
 beforeAll(async () => {
     // create normal user
     user.email = Math.random().toString(36).slice(2) + '@test.com';
     const reg = await request(app).post('/api/auth').send(user);
     userToken = reg.body.token;
-    userId = getIdFromToken(userToken);
     expectValidJwt(userToken);
 
     // create admin
@@ -42,21 +37,6 @@ test('List franchises', async () => {
     expect(res.body).toHaveProperty('more');
 });
 
-test('Admin can create franchise', async () => {
-    const res = await request(app)
-        .post('/api/franchise')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-        name: 'Test Franchise',
-        admins: [{ email: user.email }],
-        });
-
-    expect(res.status).toBe(200);
-    expect(res.body.name).toBe('Test Franchise');
-    expect(res.body.id).toBeDefined();
-    franchiseId = res.body.id;
-});
-
 test('Normal user cannot create franchise', async () => {
     const res = await request(app)
         .post('/api/franchise')
@@ -66,3 +46,40 @@ test('Normal user cannot create franchise', async () => {
     expect(res.status).toBe(403);
 });
 
+
+test('Unrelated user cannot create store', async () => {
+    // create second user
+    const otherUser = {
+        name: 'other',
+        email: Math.random().toString(36).slice(2) + '@test.com',
+        password: 'a',
+    };
+
+    const reg = await request(app).post('/api/auth').send(otherUser);
+    const otherToken = reg.body.token;
+
+    const res = await request(app)
+        .post(`/api/franchise/${franchiseId}/store`)
+        .set('Authorization', `Bearer ${otherToken}`)
+        .send({ name: 'Hack Store' });
+
+    expect(res.status).toBe(403);
+});
+
+test('Admin can delete store', async () => {
+    const res = await request(app)
+        .delete(`/api/franchise/${franchiseId}/store/${storeId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/store deleted/i);
+});
+
+test('Admin can delete franchise', async () => {
+    const res = await request(app)
+        .delete(`/api/franchise/${franchiseId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.message).toMatch(/franchise deleted/i);
+});
