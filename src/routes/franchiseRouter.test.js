@@ -41,3 +41,28 @@ test('List franchises', async () => {
     expect(res.body).toHaveProperty('franchises');
     expect(res.body).toHaveProperty('more');
 });
+
+test('Admin can create franchise', async () => {
+    const res = await request(app)
+        .post('/api/franchise')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+        name: 'Test Franchise',
+        admins: [{ email: user.email }],
+        });
+
+    expect(res.status).toBe(200);
+    expect(res.body.name).toBe('Test Franchise');
+    expect(res.body.id).toBeDefined();
+    franchiseId = res.body.id;
+});
+
+test('Normal user cannot create franchise', async () => {
+    const res = await request(app)
+        .post('/api/franchise')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ name: 'Illegal Franchise' });
+
+    expect(res.status).toBe(403);
+});
+
