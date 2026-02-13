@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../service');
-const { createAdminUser } = require('./testUtil');
+const { createAdminUser, registerUser } = require('./testUtil');
 
 let normalUser = { name: 'user', password: 'a' };
 let normalToken;
@@ -69,4 +69,29 @@ test('User cannot update another user', async () => {
 
   expect(res.status).toBe(403);
   expect(res.body.message).toMatch(/unauthorized/i);
+});
+
+test('list users unauthorized', async () => {
+  const listUsersRes = await request(app).get('/api/user');
+  expect(listUsersRes.status).toBe(401);
+});
+
+test('list users', async () => {
+  const [, userToken] = await registerUser(request(app));
+
+  const res = await request(app)
+    .get('/api/user')
+    .set('Authorization', 'Bearer ' + userToken);
+
+  expect(res.status).toBe(200);
+  expect(res.body).toHaveProperty('users');
+  expect(Array.isArray(res.body.users)).toBe(true);
+
+  const user = res.body.users[0];
+
+  expect(user).toHaveProperty('id');
+  expect(user).toHaveProperty('name');
+  expect(user).toHaveProperty('email');
+  expect(user).toHaveProperty('roles');
+  expect(Array.isArray(user.roles)).toBe(true);
 });
