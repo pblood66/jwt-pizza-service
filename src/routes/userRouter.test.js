@@ -95,3 +95,25 @@ test('list users', async () => {
   expect(user).toHaveProperty('roles');
   expect(Array.isArray(user.roles)).toBe(true);
 });
+
+test('user can delete self', async () => {
+  const [user, token] = await registerUser(request(app));
+
+  const res = await request(app)
+    .delete(`/api/user/${user.id}`)
+    .set('Authorization', 'Bearer ' + token);
+
+  expect(res.status).toBe(200);
+});
+
+test('user cannot delete another user', async () => {
+  const [, token1] = await registerUser(request(app));
+  const [user2] = await registerUser(request(app));
+
+  const res = await request(app)
+    .delete(`/api/user/${user2.id}`)
+    .set('Authorization', 'Bearer ' + token1);
+
+  expect(res.status).toBe(403);
+});
+
