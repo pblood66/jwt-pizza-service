@@ -2,7 +2,7 @@ const app = require('./service.js');
 
 const port = process.argv[2] || 3000;
 
-const metrics = require('./metrics');
+const metrics = require('./metrics/metrics.js');
 
 app.use(metrics.requestTracker);
 
