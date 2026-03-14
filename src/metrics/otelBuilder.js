@@ -54,7 +54,6 @@ class OtelMetricBuilder {
     })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP status: ${res.status}`);
-        console.log('Metrics sent successfully');
       })
       .catch((err) => console.error('Error pushing metrics:', err));
   }
