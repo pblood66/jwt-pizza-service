@@ -21,8 +21,15 @@ function createMetric(metricName, metricValue, metricUnit, metricType, valueType
       value: { stringValue: attributes[key] },
     });
   });
+
+  if (metricType === 'sum') {
+    metric[metricType].aggregationTemporality = 'AGGREGATION_TEMPORALITY_CUMULATIVE';
+    metric[metricType].isMonotonic = true;
+  }
+
   return metric;
 }
+  
 
 class OtelMetricBuilder {
   constructor() { this.metrics = []; }
