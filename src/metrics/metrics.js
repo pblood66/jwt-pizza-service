@@ -1,10 +1,14 @@
-const { sendMetricsPeriodically } = require("./scheduler");
+const { systemMetrics } = require("./systemMetrics");
+const { OtelMetricBuilder } = require("./otelBuilder");
 
-
-function requestTracker(req, res, next) {
-  next();
+function sendMetricsPeriodically(period) {
+  setInterval(() => {
+    try {
+      new OtelMetricBuilder().add(systemMetrics).sendToGrafana();
+    } catch (error) {
+      console.error("Error sending metrics", error);
+    }
+  }, period);
 }
 
-sendMetricsPeriodically(10000);
-
-module.exports = { requestTracker };
+module.exports = { sendMetricsPeriodically };
