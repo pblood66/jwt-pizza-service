@@ -44,14 +44,6 @@ while true; do
 done &
 pid2=$!
 
-# Simulate a user with an invalid email and password every 32 seconds
-while true; do
-  result=$(execute_curl "-X PUT \"$host/api/auth\" -d '{\"email\":\"unknown@jwt.com\", \"password\":\"bad\"}' -H 'Content-Type: application/json'")
-  echo "Logging in with invalid credentials..." $result
-  sleep 32
-done &
-pid2=$!
-
 # Simulate a franchisee logging in every two minutes
 while true; do
   token=$(login "f@jwt.com" "franchisee")
