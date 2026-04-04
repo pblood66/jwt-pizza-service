@@ -7,7 +7,7 @@ function userLoggedOut() { activeUsers = Math.max(0, activeUsers - 1); }
 
 function userMetrics() {
   return [
-    createMetric('users_active', activeUsers, '1', 'gauge', 'asInt', {}),
+    createMetric('users_active', activeUsers, '{users}', 'gauge', 'asInt', {})
   ];
 }
 

@@ -18,40 +18,19 @@ function recordPizzaCreationLatency(ms) {
 
 function purchaseMetrics() {
   const metrics = [
-    createMetric("pizza_sold_total", pizzasSold, "1", "sum", "asInt", {}),
-    createMetric(
-      "pizza_creation_failures_total",
-      creationFailures,
-      "1",
-      "sum",
-      "asInt",
-      {},
-    ),
-    createMetric(
-      "pizza_revenue_total",
-      totalRevenue,
-      "USD",
-      "sum",
-      "asDouble",
-      {},
-    ),
+    createMetric("pizza_sold_total", pizzasSold, "{pizzas}", "sum", "asInt", {}),
+    createMetric("pizza_creation_failures_total", creationFailures, "{failures}", "sum", "asInt", {}),
+    createMetric("pizza_revenue_total", totalRevenue, "USD", "sum", "asDouble", {}),
   ];
+
   if (pizzaCreationLatencies.length > 0) {
-    const avg =
-      pizzaCreationLatencies.reduce((a, b) => a + b, 0) /
-      pizzaCreationLatencies.length;
+    const avg = pizzaCreationLatencies.reduce((a, b) => a + b, 0) / pizzaCreationLatencies.length;
     metrics.push(
-      createMetric(
-        "pizza_creation_latency_ms",
-        avg,
-        "ms",
-        "gauge",
-        "asDouble",
-        {},
-      ),
+      createMetric("pizza_creation_latency_ms", avg, "ms", "gauge", "asDouble", {})
     );
-    pizzaCreationLatencies = [];
+    pizzaCreationLatencies = []; // ✅ gauges/summaries CAN reset
   }
+
   return metrics;
 }
 
