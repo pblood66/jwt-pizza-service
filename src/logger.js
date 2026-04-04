@@ -11,6 +11,10 @@ class Logger {
   httpLogger = (req, res, next) => {
     const start = Date.now();
 
+    if (req.path === '/') {
+    return next();
+  }
+
     const originalJson = res.json.bind(res);
     let responseBody;
     res.json = (body) => {
